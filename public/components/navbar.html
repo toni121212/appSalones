@@ -1,0 +1,62 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-semibold" href="/dashboard.html">
+      Salones
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Abrir menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+      <!-- Menú desktop -->
+      <ul class="navbar-nav me-auto d-none d-lg-flex">
+        <li class="nav-item">
+          <a class="nav-link" href="/dashboard.html">Dashboard</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/registros.html">Capturar</a>
+        </li>
+
+        <li class="nav-item d-none" id="navReportes">
+          <a class="nav-link" href="/reportes.html">Reportes</a>
+        </li>
+
+        <li class="nav-item d-none" id="navSalones">
+          <a class="nav-link" href="/admin-salones.html">Admin salones</a>
+        </li>
+
+        <li class="nav-item d-none" id="navUsuarios">
+          <a class="nav-link" href="/crear_usuario.html">Crear usuario</a>
+        </li>
+      </ul>
+
+      <!-- Usuario + salir desktop -->
+      <div class="d-none d-lg-flex align-items-center gap-2">
+        <span class="text-white-50 small" id="navUser"></span>
+        <button class="btn btn-outline-light btn-sm" id="logoutBtn" type="button">
+          Salir
+        </button>
+      </div>
+
+      <!-- Menú móvil -->
+      <div class="d-lg-none pt-3 pb-2 w-100">
+        <div class="text-white-50 small mb-2" id="navUserMobile">Cargando usuario...</div>
+
+        <div class="d-grid gap-2">
+          <a class="btn btn-light text-start" href="/dashboard.html">🏠 Dashboard</a>
+          <a class="btn btn-light text-start" href="/registros.html">📝 Capturar</a>
+
+          <a class="btn btn-light text-start d-none" id="navReportesMobile" href="/reportes.html">📊 Reportes</a>
+          <a class="btn btn-light text-start d-none" id="navSalonesMobile" href="/admin-salones.html">🏢 Admin salones</a>
+          <a class="btn btn-light text-start d-none" id="navUsuariosMobile" href="/crear_usuario.html">👥 Crear usuario</a>
+
+          <button class="btn btn-outline-light text-start mt-1" id="logoutBtnMobile" type="button">
+            🚪 Salir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

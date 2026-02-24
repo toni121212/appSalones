@@ -1,0 +1,108 @@
+   body {
+      background: #f4f6f9;
+    }
+
+    .page-title {
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .section-card {
+      border: 0;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06);
+    }
+
+    .section-header {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .chip {
+      font-size: .75rem;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-weight: 600;
+    }
+
+    .summary-box {
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #fff;
+      border: 1px solid #e9ecef;
+      height: 100%;
+    }
+
+    .summary-label {
+      font-size: .82rem;
+      color: #6c757d;
+      margin-bottom: .25rem;
+    }
+
+    .summary-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .summary-value.positive { color: #198754; }
+    .summary-value.negative { color: #dc3545; }
+
+    .sticky-summary {
+      position: sticky;
+      top: 16px;
+    }
+
+    .card-soft {
+      background: #ffffff;
+      border: 1px solid #e9ecef;
+      border-radius: 14px;
+    }
+
+    .form-label {
+      font-weight: 600;
+      margin-bottom: .35rem;
+    }
+
+    .input-group-text {
+      min-width: 44px;
+      justify-content: center;
+    }
+
+    .totals-list .row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .65rem .25rem;
+      border-bottom: 1px dashed #e9ecef;
+    }
+
+    .totals-list .row-item:last-child {
+      border-bottom: 0;
+    }
+
+    .totals-list .label {
+      color: #6c757d;
+      font-weight: 600;
+    }
+
+    .totals-list .value {
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .totals-list .value.utilidad {
+      color: #198754;
+    }
+
+    @media (max-width: 991.98px) {
+      .sticky-summary {
+        position: static;
+      }
+    }
