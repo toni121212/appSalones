@@ -65,14 +65,66 @@ document.addEventListener("DOMContentLoaded", async () => {
             <td class="text-end">$${money(r.total_egresos)}</td>
             <td class="text-end">$${money(r.utilidad)}</td>
             <td class="text-center">
-              <button class="btn btn-sm btn-danger btn-eliminar" data-id="${r.id}">
-                Eliminar
-              </button>
-            </td>
+  <button class="btn btn-sm btn-info btn-detalle" data-id="${r.id}">
+    Ver
+  </button>
+  <button class="btn btn-sm btn-danger btn-eliminar" data-id="${r.id}">
+    Eliminar
+  </button>
+</td>
           </tr>
         `;
       }).join("");
+// Evento botones ver detalle
+document.querySelectorAll(".btn-detalle").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.id;
+    const registro = data.find(r => r.id == id);
+    mostrarDetalle(registro);
+  });
+});
+function mostrarDetalle(r){
+  const money = (x)=> Number(x || 0).toFixed(2);
 
+  const html = `
+    <div class="row">
+      <div class="col-md-6">
+        <p><b>Fecha:</b> ${r.fecha}</p>
+        <p><b>Salón:</b> ${r.salon}</p>
+        <p><b>Usuario:</b> ${r.creado_por_nombre || "Desconocido"}</p>
+      </div>
+      <div class="col-md-6">
+        <p><b>Total ingresos:</b> $${money(r.total_ingresos)}</p>
+        <p><b>Total egresos:</b> $${money(r.total_egresos)}</p>
+        <p><b>Utilidad:</b> $${money(r.utilidad)}</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <h6>Ingresos</h6>
+    <ul>
+      <li>Paquete: $${money(r.paquete)}</li>
+      <li>Talón: $${money(r.talon)}</li>
+      <li>Extra: $${money(r.extra)}</li>
+    </ul>
+
+    <h6>Egresos</h6>
+    <ul>
+      <li>Comisión: $${money(r.comision)}</li>
+      <li>Gasto: $${money(r.gasto)}</li>
+      <li>Sueldo 1: $${money(r.sueldo1)}</li>
+      <li>Sueldo 2: $${money(r.sueldo2)}</li>
+      <li>Sueldo 3: $${money(r.sueldo3)}</li>
+      <li>Sueldo 4: $${money(r.sueldo4)}</li>
+    </ul>
+  `;
+
+  document.getElementById("detalleContenido").innerHTML = html;
+
+  const modal = new bootstrap.Modal(document.getElementById("detalleModal"));
+  modal.show();
+}
     // Eventos de botones eliminar
     document.querySelectorAll(".btn-eliminar").forEach(btn => {
       btn.addEventListener("click", () => eliminarReporte(btn.dataset.id));
