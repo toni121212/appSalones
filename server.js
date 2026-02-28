@@ -243,5 +243,7 @@ async function startServer() {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
 }
-
+app.get("/", (req, res) => {
+  res.redirect("/login.html");
+});
 startServer();
