@@ -447,4 +447,42 @@ app.get("/api/registros", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Error al obtener registros" });
   }
 });
+// ==============================
+// ELIMINAR REGISTRO
+// ==============================
+
+app.delete("/api/registros/:id", requireAuth, async (req, res) => {
+
+  try {
+
+    const id = req.params.id;
+
+    // Si no es admin → solo puede borrar sus propios registros
+    if (req.session.user.role !== "admin") {
+
+      const [rows] = await pool.query(
+        "SELECT created_by FROM registros WHERE id = ?",
+        [id]
+      );
+
+      if (rows.length === 0)
+        return res.status(404).json({ error: "Registro no encontrado" });
+
+      if (rows[0].created_by !== req.session.user.id)
+        return res.status(403).json({ error: "Sin permisos" });
+    }
+
+    await pool.query(
+      "DELETE FROM registros WHERE id = ?",
+      [id]
+    );
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al eliminar registro" });
+  }
+
+});
 startServer();
