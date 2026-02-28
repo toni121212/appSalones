@@ -246,4 +246,151 @@ async function startServer() {
 app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
+
+// ==============================
+// SALONES
+// ==============================
+
+app.get("/api/salones", requireAuth, async (req, res) => {
+  const [rows] = await pool.query(
+    "SELECT * FROM salones WHERE activo = 1 ORDER BY nombre ASC"
+  );
+  res.json(rows);
+});
+
+app.get("/api/salones/all", requireRole("admin"), async (req, res) => {
+  const [rows] = await pool.query(
+    "SELECT * FROM salones ORDER BY nombre ASC"
+  );
+  res.json(rows);
+});
+
+app.post("/api/salones", requireRole("admin"), async (req, res) => {
+  const { nombre } = req.body;
+  if (!nombre) return res.status(400).json({ error: "Nombre obligatorio" });
+
+  try {
+    await pool.query("INSERT INTO salones (nombre) VALUES (?)", [nombre]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: "El salón ya existe" });
+  }
+});
+
+app.put("/api/salones/:id", requireRole("admin"), async (req, res) => {
+  await pool.query(
+    "UPDATE salones SET nombre = ? WHERE id = ?",
+    [req.body.nombre, req.params.id]
+  );
+  res.json({ ok: true });
+});
+
+app.delete("/api/salones/:id", requireRole("admin"), async (req, res) => {
+  await pool.query(
+    "UPDATE salones SET activo = 0 WHERE id = ?",
+    [req.params.id]
+  );
+  res.json({ ok: true });
+});
+
+app.put("/api/salones/:id/reactivar", requireRole("admin"), async (req, res) => {
+  await pool.query(
+    "UPDATE salones SET activo = 1 WHERE id = ?",
+    [req.params.id]
+  );
+  res.json({ ok: true });
+});
+// ==============================
+// USERS
+// ==============================
+
+app.get("/api/users", requireRole("admin"), async (req, res) => {
+  const [rows] = await pool.query(
+    "SELECT id,name,email,role FROM users ORDER BY id DESC"
+  );
+  res.json(rows);
+});
+
+app.post("/api/users", requireRole("admin"), async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  const hash = await bcrypt.hash(password, 10);
+
+  await pool.query(
+    "INSERT INTO users (name,email,password_hash,role) VALUES (?,?,?,?)",
+    [name, email, hash, role]
+  );
+
+  res.json({ ok: true });
+});
+
+app.put("/api/users/:id", requireRole("admin"), async (req, res) => {
+  const { name, email, role, password } = req.body;
+
+  if (password) {
+    const hash = await bcrypt.hash(password, 10);
+    await pool.query(
+      "UPDATE users SET name=?,email=?,role=?,password_hash=? WHERE id=?",
+      [name, email, role, hash, req.params.id]
+    );
+  } else {
+    await pool.query(
+      "UPDATE users SET name=?,email=?,role=? WHERE id=?",
+      [name, email, role, req.params.id]
+    );
+  }
+
+  res.json({ ok: true });
+});
+
+app.delete("/api/users/:id", requireRole("admin"), async (req, res) => {
+  await pool.query("DELETE FROM users WHERE id = ?", [req.params.id]);
+  res.json({ ok: true });
+});
+// ==============================
+// DASHBOARD
+// ==============================
+
+app.get("/api/dashboard/resumen", requireRole("admin"), async (req, res) => {
+  const [rows] = await pool.query(`
+    SELECT
+      COUNT(*) AS total_reportes,
+      COALESCE(SUM(total_ingresos),0) AS total_ingresos,
+      COALESCE(SUM(total_egresos),0) AS total_egresos,
+      COALESCE(SUM(utilidad),0) AS total_utilidad
+    FROM registros
+  `);
+
+  res.json(rows[0]);
+});
+
+app.get("/api/dashboard/utilidad-por-salon", requireRole("admin"), async (req, res) => {
+  const [rows] = await pool.query(`
+    SELECT s.nombre AS salon,
+           COUNT(r.id) AS total_reportes,
+           COALESCE(SUM(r.utilidad),0) AS total_utilidad
+    FROM salones s
+    LEFT JOIN registros r ON r.salon_id = s.id
+    GROUP BY s.id
+    ORDER BY total_utilidad DESC
+  `);
+  res.json(rows);
+});
+
+app.get("/api/dashboard/tendencia", requireRole("admin"), async (req, res) => {
+  const dias = Number(req.query.dias || 7);
+
+  const [rows] = await pool.query(`
+    SELECT fecha,
+           SUM(total_ingresos) AS total_ingresos,
+           SUM(total_egresos) AS total_egresos,
+           SUM(utilidad) AS total_utilidad
+    FROM registros
+    WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+    GROUP BY fecha
+    ORDER BY fecha ASC
+  `, [dias]);
+
+  res.json({ rows });
+});
 startServer();
