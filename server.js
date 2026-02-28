@@ -19,6 +19,61 @@ app.use(
 );
 
 // ==============================
+// CREAR TABLAS AUTOMÁTICAMENTE
+// ==============================
+
+async function initDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS salones (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nombre VARCHAR(255) UNIQUE NOT NULL,
+        activo BOOLEAN DEFAULT TRUE
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role ENUM('admin','user') NOT NULL
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS registros (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        salon_id INT NOT NULL,
+        fecha DATE NOT NULL,
+        paquete DECIMAL(10,2) DEFAULT 0,
+        talon DECIMAL(10,2) DEFAULT 0,
+        extra DECIMAL(10,2) DEFAULT 0,
+        comision DECIMAL(10,2) DEFAULT 0,
+        gasto DECIMAL(10,2) DEFAULT 0,
+        sueldo1 DECIMAL(10,2) DEFAULT 0,
+        sueldo2 DECIMAL(10,2) DEFAULT 0,
+        sueldo3 DECIMAL(10,2) DEFAULT 0,
+        sueldo4 DECIMAL(10,2) DEFAULT 0,
+        total_ingresos DECIMAL(10,2) DEFAULT 0,
+        total_egresos DECIMAL(10,2) DEFAULT 0,
+        utilidad DECIMAL(10,2) DEFAULT 0,
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (salon_id) REFERENCES salones(id),
+        FOREIGN KEY (created_by) REFERENCES users(id)
+      )
+    `);
+
+    console.log("✅ Tablas verificadas");
+
+  } catch (err) {
+    console.error("Error creando tablas:", err.message);
+  }
+}
+
+// ==============================
 // MIDDLEWARES
 // ==============================
 
@@ -44,7 +99,10 @@ async function seedAdmin() {
     const email = "admin@admin.com";
     const pass = "123456";
 
-    const [rows] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+    const [rows] = await pool.query(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
 
     if (rows.length > 0) return;
 
@@ -56,11 +114,11 @@ async function seedAdmin() {
     );
 
     console.log("✅ Admin creado");
+
   } catch (err) {
     console.error("Error seedAdmin:", err.message);
   }
 }
-seedAdmin();
 
 // ==============================
 // AUTH
@@ -120,9 +178,11 @@ function calcTotals(body) {
     n(body.sueldo3) +
     n(body.sueldo4);
 
-  const utilidad = total_ingresos - total_egresos;
-
-  return { total_ingresos, total_egresos, utilidad };
+  return {
+    total_ingresos,
+    total_egresos,
+    utilidad: total_ingresos - total_egresos
+  };
 }
 
 // ==============================
@@ -172,78 +232,16 @@ app.post("/api/registros", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/api/registros", requireRole("admin"), async (req, res) => {
-  const { salon_id, from, to } = req.query;
-
-  const where = [];
-  const params = [];
-
-  if (salon_id) { where.push("r.salon_id = ?"); params.push(salon_id); }
-  if (from) { where.push("r.fecha >= ?"); params.push(from); }
-  if (to) { where.push("r.fecha <= ?"); params.push(to); }
-
-  const sql = `
-    SELECT 
-      r.*,
-      s.nombre AS salon,
-      u.name AS creado_por_nombre
-    FROM registros r
-    JOIN salones s ON s.id = r.salon_id
-    LEFT JOIN users u ON u.id = r.created_by
-    ${where.length ? "WHERE " + where.join(" AND ") : ""}
-    ORDER BY r.fecha DESC
-  `;
-
-  try {
-    const [rows] = await pool.query(sql, params);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al consultar registros" });
-  }
-});
-
-app.delete("/api/registros/:id", requireRole("admin"), async (req, res) => {
-  try {
-    await pool.query("DELETE FROM registros WHERE id = ?", [req.params.id]);
-    res.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al eliminar" });
-  }
-});
-
 // ==============================
-// SALONES
+// INICIALIZAR SERVIDOR
 // ==============================
 
-app.get("/api/salones", requireAuth, async (req, res) => {
-  const [rows] = await pool.query(
-    "SELECT * FROM salones WHERE activo = 1 ORDER BY nombre ASC"
-  );
-  res.json(rows);
-});
+async function startServer() {
+  await initDatabase();
+  await seedAdmin();
 
-// ==============================
-// DASHBOARD
-// ==============================
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
+}
 
-app.get("/api/dashboard/resumen", requireRole("admin"), async (req, res) => {
-  const [rows] = await pool.query(`
-    SELECT
-      COUNT(*) AS total_reportes,
-      COALESCE(SUM(total_ingresos), 0) AS total_ingresos,
-      COALESCE(SUM(total_egresos), 0) AS total_egresos,
-      COALESCE(SUM(utilidad), 0) AS total_utilidad
-    FROM registros
-  `);
-
-  res.json(rows[0]);
-});
-
-app.get("/", (req, res) => {
-  res.redirect("/login.html");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+startServer();
