@@ -393,4 +393,58 @@ app.get("/api/dashboard/tendencia", requireRole("admin"), async (req, res) => {
 
   res.json({ rows });
 });
+// ==============================
+// LISTAR REGISTROS (REPORTES)
+// ==============================
+
+app.get("/api/registros", requireAuth, async (req, res) => {
+
+  try {
+    let sql = `
+      SELECT r.*, 
+             s.nombre AS salon,
+             u.name AS creado_por_nombre
+      FROM registros r
+      JOIN salones s ON r.salon_id = s.id
+      LEFT JOIN users u ON r.created_by = u.id
+      WHERE 1=1
+    `;
+
+    const params = [];
+
+    // Filtro por salón
+    if (req.query.salon_id) {
+      sql += " AND r.salon_id = ?";
+      params.push(req.query.salon_id);
+    }
+
+    // Filtro fecha desde
+    if (req.query.from) {
+      sql += " AND r.fecha >= ?";
+      params.push(req.query.from);
+    }
+
+    // Filtro fecha hasta
+    if (req.query.to) {
+      sql += " AND r.fecha <= ?";
+      params.push(req.query.to);
+    }
+
+    // Si NO es admin → solo sus registros
+    if (req.session.user.role !== "admin") {
+      sql += " AND r.created_by = ?";
+      params.push(req.session.user.id);
+    }
+
+    sql += " ORDER BY r.fecha DESC";
+
+    const [rows] = await pool.query(sql, params);
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener registros" });
+  }
+});
 startServer();
