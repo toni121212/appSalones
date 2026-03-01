@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         return `
           <tr>
-            <td>${new Date(r.fecha + "T00:00:00").toLocaleDateString()}</td>
+            <td>${r.fecha}</td>
             <td>${r.salon}</td>
             <td>${r.creado_por_nombre || "Desconocido"}</td>
             <td class="text-end">$${money(r.total_ingresos)}</td>
