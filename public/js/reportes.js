@@ -92,6 +92,8 @@ function mostrarDetalle(r){
         <p><b>Fecha:</b> ${r.fecha}</p>
         <p><b>Salón:</b> ${r.salon}</p>
         <p><b>Usuario:</b> ${r.creado_por_nombre || "Desconocido"}</p>
+        <p><b>Cliente:</b> ${r.cliente_nombre || "N/A"}</p>
+        <p><b>Teléfono:</b> ${r.cliente_numero || "N/A"}</p>
       </div>
       <div class="col-md-6">
         <p><b>Total ingresos:</b> $${money(r.total_ingresos)}</p>
