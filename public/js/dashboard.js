@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     box.classList.remove("d-none");
     box.innerHTML = `
       <div class="alert alert-info mb-0">
-        Bienvenido. Tu perfil no tiene acceso a reportes globales del dashboard.
+        Bienvenido. 
         Usa los accesos rápidos para capturar registros.
       </div>
     `;

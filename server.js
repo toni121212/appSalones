@@ -201,13 +201,15 @@ app.post("/api/registros", requireAuth, async (req, res) => {
   try {
     const [result] = await pool.query(
       `INSERT INTO registros
-      (salon_id, fecha, paquete, talon, extra, comision, gasto,
+      (salon_id, fecha,cliente_nombre,cliente_numero, paquete, talon, extra, comision, gasto,
        sueldo1, sueldo2, sueldo3, sueldo4,
        total_ingresos, total_egresos, utilidad, created_by)
       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         salon_id,
         fecha,
+        req.body.cliente_nombre,
+        req.body.cliente_numero,
         req.body.paquete || 0,
         req.body.talon || 0,
         req.body.extra || 0,
