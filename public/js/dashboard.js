@@ -70,60 +70,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   
-
-  async function init() {
-    try {
-      if (btnActualizar) btnActualizar.disabled = true;
-
-      await cargarUsuario();
-
-      // Sin sesión -> no seguir
-      if (!currentUser) return;
-
-      // Usuario normal -> ocultar todo lo de admin y no pedir endpoints admin
-      if (currentUser.role !== "admin") {
-        ocultarSeccionAdminDashboard();
-        mostrarMensajeUsuarioNormal();
-        return;
-      }
-
-      // Admin sí carga dashboard completo
-      await cargarDashboardAdmin();
-
-    } catch (err) {
-      console.error("Error cargando dashboard:", err);
-
-      // Si es por permisos, no mostrar alert molesto
-      if (err.status === 403) {
-        ocultarSeccionAdminDashboard();
-        mostrarMensajeUsuarioNormal();
-        return;
-      }
-
-      alert(err.message || "Error al cargar dashboard");
-    } finally {
-      if (btnActualizar && currentUser?.role === "admin") {
-        btnActualizar.disabled = false;
-      }
-    }
-  }
-
-  btnActualizar?.addEventListener("click", async () => {
-    if (currentUser?.role !== "admin") return;
-
-    try {
-      btnActualizar.disabled = true;
-      await cargarDashboardAdmin();
-    } catch (err) {
-      console.error(err);
-      if (err.status !== 403) {
-        alert(err.message || "Error al actualizar dashboard");
-      }
-    } finally {
-      btnActualizar.disabled = false;
-    }
-  });
-
   diasEl?.addEventListener("change", async () => {
     if (currentUser?.role !== "admin") return;
 
