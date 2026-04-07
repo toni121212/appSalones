@@ -58,11 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         return `
           <tr>
-           <td>${new Date(r.fecha).toLocaleDateString('es-MX', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric'
-})}</td>
+            <td>${formatearFecha(r.fecha)}</td>
             <td>${r.salon}</td>
             <td>${r.creado_por_nombre || "Desconocido"}</td>
             <td class="text-end">$${money(r.total_ingresos)}</td>
@@ -93,7 +89,7 @@ function mostrarDetalle(r){
   const html = `
     <div class="row">
       <div class="col-md-6">
-        <p><b>Fecha:</b> ${r.fecha}</p>
+        <p><b>Fecha:</b> ${formatearFecha(r.fecha)}</p>
         <p><b>Salón:</b> ${r.salon}</p>
         <p><b>Usuario:</b> ${r.creado_por_nombre || "Desconocido"}</p>
         <p><b>Cliente:</b> ${r.cliente_nombre || "N/A"}</p>
@@ -145,4 +141,10 @@ function mostrarDetalle(r){
 
   await loadSalones();
   await buscar();
+  
+  function formatearFecha(fecha){
+  const soloFecha = fecha.split("T")[0]; // 2026-04-06
+  const partes = soloFecha.split("-");   // [2026,04,06]
+  return `${partes[2]}/${partes[1]}/${partes[0]}`; // 06/04/2026
+}
 });
