@@ -204,7 +204,7 @@ app.post("/api/registros", requireAuth, async (req, res) => {
       (salon_id, fecha,cliente_nombre,cliente_numero, paquete, talon, extra, comision, gasto,
        sueldo1, sueldo2, sueldo3, sueldo4,
        total_ingresos, total_egresos, utilidad, created_by)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         salon_id,
         fecha,
