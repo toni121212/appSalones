@@ -50,10 +50,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    msg.textContent = "✅ Guardado con ID " + data.id;
-    msg.className = "alert alert-success mt-3";
-    f.reset();
-    calc();
+  // Mostrar modal
+const modal = new bootstrap.Modal(document.getElementById('successModal'));
+modal.show();
+
+// Limpiar formulario
+f.reset();
+calc();
   });
 
   await loadSalones();
