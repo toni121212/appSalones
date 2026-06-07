@@ -419,6 +419,11 @@ app.get("/api/registros", requireAuth, async (req, res) => {
       sql += " AND r.salon_id = ?";
       params.push(req.query.salon_id);
     }
+    // Filtro por encargado
+if (req.query.encargado_id) {
+  sql += " AND r.created_by = ?";
+  params.push(req.query.encargado_id);
+}
 
     // Filtro fecha desde
     if (req.query.from) {

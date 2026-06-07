@@ -9,7 +9,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     sel.innerHTML = `<option value="">(Todos)</option>` +
       salones.map(s => `<option value="${s.id}">${s.nombre}</option>`).join("");
   }
+async function loadEncargados(){
+  const res = await fetch("/api/users");
+  const users = await res.json();
 
+  const sel = document.getElementById("encargado_id");
+
+  sel.innerHTML = `<option value="">(Todos)</option>` +
+    users.map(u => `<option value="${u.id}">${u.name}</option>`).join("");
+}
   async function eliminarReporte(id){
     const ok = confirm("¿Seguro que deseas eliminar este reporte?");
     if (!ok) return;
@@ -36,14 +44,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function buscar(){
     const qs = new URLSearchParams();
+const salon_id = document.getElementById("salon_id").value;
+const encargado_id = document.getElementById("encargado_id").value;
+const from = document.getElementById("from").value;
+const to = document.getElementById("to").value;
 
-    const salon_id = document.getElementById("salon_id").value;
-    const from = document.getElementById("from").value;
-    const to = document.getElementById("to").value;
-
-    if (salon_id) qs.set("salon_id", salon_id);
-    if (from) qs.set("from", from);
-    if (to) qs.set("to", to);
+if (salon_id) qs.set("salon_id", salon_id);
+if (encargado_id) qs.set("encargado_id", encargado_id);
+if (from) qs.set("from", from);
+if (to) qs.set("to", to);
 
     const res = await fetch("/api/registros?" + qs.toString());
     const data = await res.json();
@@ -140,7 +149,8 @@ function mostrarDetalle(r){
   document.getElementById("buscar").onclick = buscar;
 
   await loadSalones();
-  await buscar();
+await loadEncargados();
+await buscar();
   
   function formatearFecha(fecha){
   const soloFecha = fecha.split("T")[0]; // 2026-04-06
