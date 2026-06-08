@@ -65,6 +65,18 @@ async function initDatabase() {
         FOREIGN KEY (created_by) REFERENCES users(id)
       )
     `);
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS salon_info (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    salon_id INT NOT NULL UNIQUE,
+    comision DECIMAL(10,2) DEFAULT 0,
+    info TEXT,
+    created_by INT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (salon_id) REFERENCES salones(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+  )
+`);
 
     console.log("✅ Tablas verificadas");
 
@@ -234,6 +246,81 @@ app.post("/api/registros", requireAuth, async (req, res) => {
   }
 });
 
+// ==============================
+// INFORMACIÓN DE SALONES
+// ==============================
+
+// Todos los usuarios autenticados pueden ver la información
+app.get("/api/salon-info", requireAuth, async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+        s.id AS salon_id,
+        s.nombre AS salon,
+        si.id AS info_id,
+        COALESCE(si.comision, 0) AS comision,
+        COALESCE(si.info, '') AS info,
+        si.updated_at
+      FROM salones s
+      LEFT JOIN salon_info si ON si.salon_id = s.id
+      WHERE s.activo = 1
+      ORDER BY s.nombre ASC
+    `);
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al obtener información de salones" });
+  }
+});
+
+// Solo admin puede guardar o editar información
+app.post("/api/salon-info", requireRole("admin"), async (req, res) => {
+  try {
+    const { salon_id, comision, info } = req.body;
+
+    if (!salon_id) {
+      return res.status(400).json({ error: "El salón es obligatorio" });
+    }
+
+    await pool.query(`
+      INSERT INTO salon_info (salon_id, comision, info, created_by)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        comision = VALUES(comision),
+        info = VALUES(info),
+        created_by = VALUES(created_by)
+    `, [
+      salon_id,
+      comision || 0,
+      info || "",
+      req.session.user.id
+    ]);
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al guardar información del salón" });
+  }
+});
+
+// Solo admin puede eliminar la información de un salón
+app.delete("/api/salon-info/:salon_id", requireRole("admin"), async (req, res) => {
+  try {
+    await pool.query(
+      "DELETE FROM salon_info WHERE salon_id = ?",
+      [req.params.salon_id]
+    );
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al eliminar información del salón" });
+  }
+});
 // ==============================
 // INICIALIZAR SERVIDOR
 // ==============================
